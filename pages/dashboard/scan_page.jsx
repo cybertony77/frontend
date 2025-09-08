@@ -36,7 +36,7 @@ export default function QR() {
   const [quizDegreeInput, setQuizDegreeInput] = useState("");
   const [quizDegreeOutOf, setQuizDegreeOutOf] = useState("");
   const [openDropdown, setOpenDropdown] = useState(null); // 'week', 'center', 'homework', or null
-  const [homeworkStatus, setHomeworkStatus] = useState('No Homework'); // 'Done', 'Not Completed', 'Not Done', 'No Homework'
+  const [homeworkStatus, setHomeworkStatus] = useState(''); // 'Done', 'Not Completed', 'Not Done', 'No Homework', or '' for no selection
   // Simple optimistic state for immediate UI feedback
   const [optimisticHwDone, setOptimisticHwDone] = useState(null);
   const [optimisticAttended, setOptimisticAttended] = useState(null);
@@ -139,15 +139,15 @@ export default function QR() {
       return currentHwDone;
     }
     
-    // If it's null (clear selection), return "No Homework" as default
+    // If it's null (no data), return empty string for "H.W: ..." display
     if (currentHwDone === null) {
-      return "No Homework";
+      return "";
     }
     
     // Fallback to old hwDone boolean format for backward compatibility
     if (currentHwDone === true) return "Done";
     if (currentHwDone === false) return "Not Done";
-    return "No Homework"; // Return "No Homework" for default state
+    return ""; // Return empty string for default state (shows "H.W: ...")
   };
 
   // Helper function to update student state with current week data
@@ -342,13 +342,13 @@ export default function QR() {
         } else if (currentHwDone === false) {
           setHomeworkStatus('Not Done');
         } else {
-          setHomeworkStatus('No Homework');
+          setHomeworkStatus('');
         }
       } else {
-        setHomeworkStatus('No Homework');
+        setHomeworkStatus('');
       }
     } else {
-      setHomeworkStatus('No Homework');
+      setHomeworkStatus('');
     }
   }, [student?.id, selectedWeek, student?.hwDone]);
 
@@ -374,8 +374,9 @@ export default function QR() {
   useEffect(() => {
     const currentAttended = optimisticAttended !== null ? optimisticAttended : student?.attended_the_session;
     if (currentAttended === false) {
-      // If attendance is false, reset other optimistic states to false/null
-      setOptimisticHwDone(false);
+      // If attendance is false, reset homework to null (empty string for "H.W: ..." display)
+      setOptimisticHwDone(null);
+      setHomeworkStatus(''); // Clear homework selection to show "H.W: ..."
       // Clear quiz degree inputs as well
       setQuizDegreeInput("");
       setQuizDegreeOutOf("");
@@ -1026,7 +1027,7 @@ export default function QR() {
                       ? 'status-not-attended'
                       : 'status-not-attended'}`}>
               {(!attendanceCenter || !selectedWeek) 
-                ? '❌ H.W: No Homework' 
+                ? '❌ H.W: ...' 
                 : getCurrentHomeworkStatus() === ""
                   ? '❌ H.W: ...'
                   : getCurrentHomeworkStatus() === "No Homework"
